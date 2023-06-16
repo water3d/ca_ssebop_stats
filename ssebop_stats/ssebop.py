@@ -137,6 +137,8 @@ class SSEBOPer(object):
 		self.export_type = "Drive"  # other option is "Cloud"
 
 		self.drive_root_folder = drive_root_folder
+		self.zonal_polygons = None
+		self.zonal_keep_fields = ("UniqueID", "CLASS2", "ACRES")
 
 		self.filename_description = ""
 
@@ -197,7 +199,7 @@ class SSEBOPer(object):
 		self._set_names(filename_prefix)
 
 		if clip:  # clip must be a geometry or feature in Earth Engine.
-			self.results.clip(clip)
+			self.results = self.results.clip(clip)
 
 		ee_kwargs = {
 			'description': self.description,
@@ -253,6 +255,11 @@ class SSEBOPer(object):
 		if callback:
 			callback_func = getattr(self, callback)
 			callback_func()
+
+	def mosaic_and_zonal(self):
+		self.mosaic()
+		print(f"running zonal stats for {self.filename}")
+		self.zonal_stats(polygons=self.zonal_polygons, keep_fields=self.zonal_keep_fields)
 
 	def mosaic(self):
 		self.mosaic_image = os.path.join(self.output_folder, f"{self.filename}_mosaic.tif")
